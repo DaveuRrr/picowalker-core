@@ -73,8 +73,16 @@ ir_err_t pw_ir_recv_packet(pw_packet_t *packet, size_t len, size_t *pn_read) {
 
     if(packet_chk != chk) return IR_ERR_BAD_CHECKSUM;
 
-    for(size_t i = i; i < 4; i++) {
-        if(packet->session_id_bytes[i] != g_session_id[i]) return IR_ERR_BAD_SESSID;
+    // Skip session ID check for commands that establish/modify the session
+    // CMD_ASSERT_MASTER (0xFA) - Master is asserting control, brings its own session ID
+    // CMD_ADVERTISING (0xFC) - Advertising doesn't use session IDs
+    uint8_t cmd = packet->cmd;
+    bool skip_session_check = (cmd == 0xFA || cmd == 0xFC);
+
+    if (!skip_session_check) {
+        for(size_t i = 0; i < 4; i++) {
+            if(packet->session_id_bytes[i] != g_session_id[i]) return IR_ERR_BAD_SESSID;
+        }
     }
 
     return IR_OK;
