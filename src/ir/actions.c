@@ -47,6 +47,10 @@ ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet,
     }
 
     err = pw_ir_recv_packet(packet, 8, pn_read);
+    if((err == IR_ERR_SHORT_PACKET) || (err == IR_ERR_BAD_SESSID) ) {
+        printf("[Debug] RX2 0x%02x\n", packet->cmd);
+        return IR_OK;
+    }
 
     return err;
 }
@@ -127,14 +131,17 @@ ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t
 
         // wait for answer
         err = pw_ir_recv_packet(packet, 8, &n_read);
-        if(err != IR_OK) return err;
+        if((err != IR_OK) && (err != IR_ERR_BAD_SESSID)) return err;
+        err = IR_OK;
 
         // TODO: Test for advertising byte, probably just log and ignore
         if(packet->cmd != CMD_SLAVE_ACK) return IR_ERR_UNEXPECTED_PACKET;
 
         // combine keys
-        pw_ir_mix_session_id(packet->session_id_bytes);
+        //pw_ir_mix_session_id(packet->session_id_bytes);
+        pw_ir_set_session_id(packet->session_id_bytes);
 
+        printf("[Debug] Key exchange done, we are master\n");
         // key exchange done, we are now master
         // TODO STATE: Move us into some master state to determine what to do next
         comms->current_substate = COMM_SUBSTATE_MASTER_DETERMINE_ACTION;
@@ -417,15 +424,16 @@ ir_err_t pw_action_peer_play(app_comms_t *comms, pw_packet_t *packet, size_t max
     case COMM_SUBSTATE_PEER_PLAY_ACK: {
 
         err = pw_ir_recv_packet(packet, 8+sizeof(walker_info_t), &n_read);
+        if(err != IR_OK) return err;
         switch(packet->cmd) {
         case CMD_PEER_PLAY_RSP:
             break;
         case CMD_PEER_PLAY_SEEN:
             return IR_ERR_PEER_ALREADY_SEEN;
         default:
+            printf("[Debug] RX 0x%02x\n", packet->cmd);
             return IR_ERR_UNEXPECTED_PACKET;
         }
-        if(err != IR_OK) return err;
 
         comms->current_substate = COMM_SUBSTATE_SEND_MASTER_SPRITES;
         comms->advertising_attempts = 0; // reset loop counter
