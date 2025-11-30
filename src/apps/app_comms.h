@@ -5,8 +5,11 @@
 #include <stddef.h>
 
 #include "../states.h"
+#include "../ir/actions.h"
 
 /// @file app_comms.h
+
+const char* const PW_COMM_SUBSTATE_NAMES[N_COMM_SUBSTATE];
 
 void pw_comms_init(pw_state_t *s, const screen_flags_t *sf);
 void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf);

@@ -24,6 +24,46 @@
 ir_err_t pw_ir_eeprom_do_write(pw_packet_t *packet, size_t len);
 ir_err_t pw_ir_identity_ack(pw_packet_t *packet);
 
+
+void pw_ir_print_error(ir_err_t err, app_comms_t *comms, pw_packet_t *packet, size_t len) {
+    if(err == IR_OK) return;
+
+    printf("[Warn ] IR error \"%s\" in comms substate \"%s\"\n",
+        PW_IR_ERR_NAMES[err], PW_COMM_SUBSTATE_NAMES[comms->current_substate]);
+
+    switch(err) {
+        case IR_OK: break;
+        case IR_ERR_BAD_SESSID: {
+            printf("[Warn ] Packet 0x%02x, session ID 0x%08x\n",
+                    packet->cmd, packet->le_session_id);
+            break;
+        }
+        case IR_ERR_BAD_CHECKSUM: {
+            printf("[Warn ] Packet 0x%02x, checksum 0x%04x\n",
+                    packet->cmd, packet->le_checksum);
+            break;
+        }
+        case IR_ERR_TIMEOUT:
+        case IR_ERR_ADVERTISING_MAX: {
+            break;
+        }
+        case IR_ERR_SHORT_PACKET: {
+            if(len > 0) {
+                printf("[Warn ] Packet 0x%02x, length %d\n",
+                    packet->cmd, len);
+            }
+            break;
+        }
+        default: {
+            printf("[Warn ] Packet 0x%02x, length %d\n",
+                    packet->cmd, len);
+            break;
+        }
+    }
+
+}
+
+
 /*
  *  Listen for a packet.
  *  If we don't hear anything, send advertising byte
@@ -34,7 +74,6 @@ ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet,
     ir_err_t err = IR_ERR_TIMEOUT;
 
     err = pw_ir_recv_packet(packet, 8, pn_read);
-
     if(*pn_read > 0) {
         return IR_OK;
     }
@@ -47,10 +86,10 @@ ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet,
     }
 
     err = pw_ir_recv_packet(packet, 8, pn_read);
-    if((err == IR_ERR_SHORT_PACKET) || (err == IR_ERR_BAD_SESSID) ) {
-        printf("[Debug] RX2 0x%02x\n", packet->cmd);
+    if(*pn_read > 0) {
         return IR_OK;
     }
+
 
     return err;
 }
@@ -116,6 +155,8 @@ ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t
             pw_ir_mix_session_id(session_id_master);
             pw_time_delay_ms(ACTION_DELAY_MS);
 
+            printf("[Debug] Key exchange done, we are slave\n");
+
             if(comms->first_comms) {
                 comms->current_substate = COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST;
             } else {
@@ -138,8 +179,8 @@ ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t
         if(packet->cmd != CMD_SLAVE_ACK) return IR_ERR_UNEXPECTED_PACKET;
 
         // combine keys
-        //pw_ir_mix_session_id(packet->session_id_bytes);
-        pw_ir_set_session_id(packet->session_id_bytes);
+        pw_ir_mix_session_id(packet->session_id_bytes);
+        //pw_ir_set_session_id(packet->session_id_bytes);
 
         printf("[Debug] Key exchange done, we are master\n");
         // key exchange done, we are now master
@@ -431,7 +472,6 @@ ir_err_t pw_action_peer_play(app_comms_t *comms, pw_packet_t *packet, size_t max
         case CMD_PEER_PLAY_SEEN:
             return IR_ERR_PEER_ALREADY_SEEN;
         default:
-            printf("[Debug] RX 0x%02x\n", packet->cmd);
             return IR_ERR_UNEXPECTED_PACKET;
         }
 

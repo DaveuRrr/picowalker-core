@@ -132,7 +132,7 @@ void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf)
             }
             }
         } else {
-            pw_log_error("Slave can't perform request 0x%02x length %lu\n", packet_buf.cmd, n_rw);
+            pw_ir_print_error(err, comms, &packet_buf, n_rw);
             if(comms->first_comms) {
                 comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
                 comms->timer = 5;
@@ -166,6 +166,7 @@ void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf)
         err = pw_action_peer_play(comms, &packet_buf, PACKET_BUF_SIZE);
         // If we timed out, the peer doesn't want to talk to us
         if(err == IR_ERR_TIMEOUT) {
+            pw_ir_print_error(err, comms, &packet_buf, n_rw);
             comms->current_substate = COMM_SUBSTATE_CANNOT_COMPLETE;
             err = IR_OK;
         }
@@ -222,11 +223,7 @@ void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf)
 
     // TODO: remove this and display proper messages on screen
     if(err != IR_OK) {
-        pw_log_info("IR error \"%s\"\n\tSubstate \"%s\"\n",
-               PW_IR_ERR_NAMES[err],
-               PW_COMM_SUBSTATE_NAMES[s->comms.current_substate]
-              );
-
+        pw_ir_print_error(err, comms, &packet_buf, n_rw);
 
         if(!comms->first_comms) {
             comms->current_substate = COMM_SUBSTATE_SEND_TO_SPLASH;

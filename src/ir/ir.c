@@ -32,7 +32,7 @@ ir_err_t pw_ir_send_packet(pw_packet_t *packet, size_t len, size_t *pn_write) {
 
     for(uint8_t i = 0; i < 4; i++)
         packet->session_id_bytes[i] = g_session_id[i];
-
+    
     uint16_t chk = pw_ir_checksum(packet, len);
 
     // Packet checksum little-endian

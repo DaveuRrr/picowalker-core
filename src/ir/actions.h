@@ -55,6 +55,7 @@ typedef enum {
     N_COMM_SUBSTATE,
 } comm_substate_t;
 
+void pw_ir_print_error(ir_err_t err, app_comms_t *comms, pw_packet_t *packet, size_t len);
 ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet, size_t *pn_read);
 ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t packet_max);
 ir_err_t pw_action_peer_play(app_comms_t *comms, pw_packet_t *packet, size_t max_len);
