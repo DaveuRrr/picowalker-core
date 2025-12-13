@@ -270,7 +270,17 @@ void pw_menu_update_display(pw_state_t *s, const screen_flags_t *sf) {
             //pw_screen_draw_text_box(0, SCREEN_HEIGHT-16, SCREEN_WIDTH, 16, SCREEN_BLACK);
 
             uint16_t addr = PW_EEPROM_ADDR_TEXT_NEED_WATTS + PW_EEPROM_SIZE_TEXT_NEED_WATTS*(s->menu.message-1);
-            pw_img_t img = (pw_img_t){.width=SCREEN_WIDTH, .height=16, .data=eeprom_buf, .size=PW_EEPROM_SIZE_TEXT_NEED_WATTS};
+            pw_img_t img = (pw_img_t){
+                .width=SCREEN_WIDTH, 
+                .height=16, 
+                .data=eeprom_buf, 
+                .size=PW_EEPROM_SIZE_TEXT_NEED_WATTS,
+                .flags = {
+                    .draw_mode=DRAW_ORIGINAL,
+                    .contents_format=CONTENTS_ORIGINAL,
+                    .use_alt=false
+                }
+            };
             pw_eeprom_read(addr, eeprom_buf, PW_EEPROM_SIZE_TEXT_NEED_WATTS);
             pw_screen_overlay_text_box(&img, SCREEN_WIDTH, 16, SCREEN_BLACK);
             pw_screen_draw_img(&img, 0, SCREEN_HEIGHT-16);

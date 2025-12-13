@@ -80,7 +80,17 @@ void pw_poke_radar_init(pw_state_t *s, const screen_flags_t *sf) {
 void pw_poke_radar_init_display(pw_state_t *s, const screen_flags_t *sf) {
     switch(s->radar.current_substate) {
     case RADAR_CHOOSING: {
-        pw_img_t bush = {.width=32, .height=24, .data=eeprom_buf, .size=192};
+        pw_img_t bush = {
+            .width=32,
+            .height=24,
+            .data=eeprom_buf,
+            .size=192,
+            .flags = {
+                .draw_mode=DRAW_ORIGINAL,
+                .contents_format=CONTENTS_ORIGINAL,
+                .use_alt=false
+            }
+        };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_BUSH, eeprom_buf, PW_EEPROM_SIZE_IMG_RADAR_BUSH);
 
         for(uint8_t i = 0; i < 4; i++)

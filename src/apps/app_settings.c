@@ -119,8 +119,15 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             PW_EEPROM_SIZE_IMG_ARROW
         );
         pw_img_t shade_bars = {
-            .width=8, .height=16,
-            .data=eeprom_buf, .size=PW_EEPROM_ADDR_IMG_CONTRAST_DEMONSTRATOR
+            .width=8,
+            .height=16,
+            .data=eeprom_buf,
+            .size=PW_EEPROM_ADDR_IMG_CONTRAST_DEMONSTRATOR,
+            .flags = {
+                .draw_mode=DRAW_ORIGINAL,
+                .contents_format=CONTENTS_ORIGINAL,
+                .use_alt=false
+            }
         };
         pw_eeprom_read(
             PW_EEPROM_ADDR_IMG_CONTRAST_DEMONSTRATOR,

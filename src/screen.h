@@ -16,12 +16,29 @@
 /*
  *  Derived functions
  */
-void pw_screen_draw_from_eeprom(
-    screen_pos_t x, screen_pos_t y,
-    screen_pos_t w, screen_pos_t h,
-    eeprom_addr_t addr,
-    size_t len
-);
+
+/********************************************************************************
+ * @brief               Reads image data from 2 eeprom addresses
+ * @param poke_addr     Pokemon Address
+ * @param message_addr  Message Address
+ * @param img           Image Pointer with additional flags
+ ********************************************************************************/
+void pw_screen_read_eeprom_pokemon_name_and_message(eeprom_addr_t poke_addr, eeprom_addr_t message_addr, pw_img_t *img);
+
+/********************************************************************************
+ * @brief               Reads image data from eeprom addresses
+ * @param addr          Address
+ * @param w             Width
+ * @param h             Height
+ * @param buf           Buffer data
+ * @param len           Size
+ * @param allowed_color If color is available draw in color
+ * @param use_alt       Alternative image or variant                   
+ * @param img           Image Pointer with additional flags
+ ********************************************************************************/
+void pw_screen_read_eeprom_img(eeprom_addr_t addr, img_dim_t w, img_dim_t h, uint8_t *buf, size_t len, bool allowed_color, bool use_alt, pw_img_t *img);
+
+void pw_screen_draw_from_eeprom(screen_pos_t x, screen_pos_t y, screen_pos_t w, screen_pos_t h, eeprom_addr_t addr, size_t len);
 size_t pw_screen_draw_integer(uint32_t n, size_t right_x, size_t y);
 void pw_screen_draw_time(uint8_t hour, uint8_t minute, uint8_t second, size_t x, size_t y);
 void pw_screen_draw_subtime(uint8_t n, size_t x, size_t y, bool draw_colon);

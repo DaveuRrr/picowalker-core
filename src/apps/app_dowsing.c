@@ -128,7 +128,17 @@ void pw_dowsing_init(pw_state_t *s, const screen_flags_t *sf) {
 }
 
 void pw_dowsing_init_display(pw_state_t *s, const screen_flags_t *sf) {
-    pw_img_t grass = {.data=img_buf, .width=16, .height=16, .size=PW_EEPROM_SIZE_IMG_DOWSING_BUSH_DARK};
+    pw_img_t grass = {
+        .width=16, 
+        .height=16, 
+        .data=img_buf,
+        .size=PW_EEPROM_SIZE_IMG_DOWSING_BUSH_DARK,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
+    };
     pw_eeprom_read(
         PW_EEPROM_ADDR_IMG_DOWSING_BUSH_DARK,
         grass.data,
@@ -435,7 +445,17 @@ void pw_dowsing_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *s
         for(avail = 0; (avail<3) && (inv[avail].le_item != 0); avail++);
 
         // Draw "Item found" text
-        pw_img_t item_found_img = {.width=SCREEN_WIDTH, .height=32, .data=eeprom_buf, .size=2*PW_EEPROM_SIZE_TEXT_FOUND};
+        pw_img_t item_found_img = {
+            .width=SCREEN_WIDTH,
+            .height=32,
+            .data=eeprom_buf,
+            .size=2*PW_EEPROM_SIZE_TEXT_FOUND,
+            .flags = {
+                .draw_mode=DRAW_ORIGINAL,
+                .contents_format=CONTENTS_ORIGINAL,
+                .use_alt=false
+            }
+        };
         uint8_t chosen_item_index = pw_item_id_to_item_index(s->dowsing.chosen_item);
 
         pw_eeprom_read(

@@ -13,19 +13,69 @@
  *  Most of the heavy lifting is done by the driver code
  */
 
+void pw_screen_read_eeprom_pokemon_name_and_message(eeprom_addr_t poke_addr, eeprom_addr_t message_addr, pw_img_t *img) {
+
+    uint8_t *buf = eeprom_buf;
+    // pw_img_t img = {.width=SCREEN_WIDTH, .height=32, .data=eeprom_buf, .size=2*PW_EEPROM_SIZE_TEXT_APPEARED};
+    pw_eeprom_read(poke_addr, buf,PW_EEPROM_SIZE_TEXT_POKEMON_NAME);
+    pw_eeprom_read(message_addr, buf + PW_EEPROM_SIZE_TEXT_APPEARED, PW_EEPROM_SIZE_TEXT_APPEARED);
+    img->width=SCREEN_WIDTH;
+    img->height=32;
+    img->size=2*PW_EEPROM_SIZE_TEXT_APPEARED;
+    img->data=buf;
+    img->flags.draw_mode = true;
+    img->flags.contents_format = CONTENTS_ORIGINAL;
+    img->flags.use_alt = false;
+}
+
+void pw_screen_read_eeprom_img(eeprom_addr_t addr, img_dim_t w, img_dim_t h, uint8_t *buf, size_t len, bool allowed_color, bool use_alt, pw_img_t *img) {
+
+    pw_eeprom_read(addr, buf, len);
+    img->width=w;
+    img->height=h;
+    img->size=len;
+    img->data=buf;
+    img->flags.draw_mode = allowed_color;
+    img->flags.contents_format = CONTENTS_ORIGINAL;
+    img->flags.use_alt = use_alt;
+}
+
 void pw_screen_draw_from_eeprom(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t addr, size_t len) {
-    pw_img_t img = {.height=h, .width=w, .data=eeprom_buf, .size=len};
+    pw_img_t img = {
+        .width=w,
+        .height=h,
+        .data=eeprom_buf,
+        .size=len,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
+    };
     pw_eeprom_read(addr, eeprom_buf, len);
+    // pw_img_t img;
+    // pw_screen_read_eeprom_img(addr, w, h, eeprom_buf, len, true, false, &img);
     pw_screen_draw_img(&img, x, y);
 }
 
 void pw_screen_draw_from_eeprom_with_text_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t addr, size_t len, screen_colour_t c) {
-    pw_img_t img = {.height=h, .width=w, .data=eeprom_buf, .size=len};
+    pw_img_t img = {
+        .width=w,
+        .height=h,
+        .data=eeprom_buf,
+        .size=len,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
+    };
     pw_eeprom_read(addr, eeprom_buf, len);
+    // pw_img_t img;
+    // pw_screen_read_eeprom_img(addr, w, h, eeprom_buf, len, true, false, &img);
     pw_screen_overlay_text_box(&img, w, h, c);
     pw_screen_draw_img(&img, x, y);
 }
-
 
 size_t pw_screen_draw_integer(uint32_t n, size_t right_x, size_t y) {
 
@@ -56,8 +106,20 @@ size_t pw_screen_draw_integer_with_overline(uint32_t n, size_t right_x, size_t y
         m = m/10;
         x -= 8;
 
-        pw_img_t img = {.width=8, .height=16, .data=eeprom_buf, .size=PW_EEPROM_SIZE_IMG_CHAR};
+        pw_img_t img = {
+            .width=8,
+            .height=16,
+            .data=eeprom_buf,
+            .size=PW_EEPROM_SIZE_IMG_CHAR,
+            .flags = {
+                .draw_mode=DRAW_ORIGINAL,
+                .contents_format=CONTENTS_ORIGINAL,
+                .use_alt=false
+            }
+        };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_DIGITS+PW_EEPROM_SIZE_IMG_CHAR*idx, eeprom_buf, PW_EEPROM_SIZE_IMG_CHAR);
+        // pw_img_t img;
+        // pw_screen_read_eeprom_img(PW_EEPROM_ADDR_IMG_DIGITS+PW_EEPROM_SIZE_IMG_CHAR*idx, 8, 16, eeprom_buf, PW_EEPROM_SIZE_IMG_CHAR, true, false, &img);
         pw_screen_overlay_overline(&img, 8, c);
         pw_screen_draw_img(&img, x, y);
     } while(m>0);
@@ -113,13 +175,20 @@ void pw_screen_draw_message(screen_pos_t y, uint8_t message_index, screen_pos_t 
     size_t sz = PW_EEPROM_SIZE_TEXT_CONNECTING*h/16;
 
     pw_eeprom_read(addr, eeprom_buf, sz);
-
     pw_img_t img = {
-        .width=SCREEN_WIDTH, .height=h,
+        .width=SCREEN_WIDTH, 
+        .height=h,
         .data=eeprom_buf,
-        .size=sz
+        .size=sz,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
     };
 
+    // pw_img_t img;
+    // pw_screen_read_eeprom_img(addr, SCREEN_WIDTH, h, eeprom_buf, sz, true, false, &img);
     pw_screen_draw_img(&img, 0, y);
 }
 
@@ -133,19 +202,36 @@ void pw_screen_draw_message_with_text_box(screen_pos_t y, uint8_t message_index,
     size_t sz = PW_EEPROM_SIZE_TEXT_CONNECTING*h/16;
 
     pw_eeprom_read(addr, eeprom_buf, sz);
-
     pw_img_t img = {
-        .width=SCREEN_WIDTH, .height=h,
+        .width=SCREEN_WIDTH, 
+        .height=h,
         .data=eeprom_buf,
-        .size=sz
+        .size=sz,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
     };
-    pw_screen_overlay_text_box(&img, SCREEN_WIDTH, h, c);
+    // pw_img_t img;
+    // pw_screen_read_eeprom_img(addr, SCREEN_WIDTH, h, eeprom_buf, sz, true, false, &img);
 
+    pw_screen_overlay_text_box(&img, SCREEN_WIDTH, h, c);
     pw_screen_draw_img(&img, 0, y);
 }
 
 void pw_screen_draw_pokemon_name_and_message(uint16_t poke_addr, uint16_t message_addr, screen_colour_t c) {
-    pw_img_t img = {.width=SCREEN_WIDTH, .height=32, .data=eeprom_buf, .size=2*PW_EEPROM_SIZE_TEXT_APPEARED};
+    pw_img_t img = {
+        .width=SCREEN_WIDTH,
+        .height=32,
+        .data=eeprom_buf,
+        .size=2*PW_EEPROM_SIZE_TEXT_APPEARED,
+        .flags = {
+            .draw_mode=DRAW_ORIGINAL,
+            .contents_format=CONTENTS_ORIGINAL,
+            .use_alt=false
+        }
+    };
     pw_eeprom_read(
         poke_addr,
         img.data,
@@ -156,6 +242,9 @@ void pw_screen_draw_pokemon_name_and_message(uint16_t poke_addr, uint16_t messag
         img.data + PW_EEPROM_SIZE_TEXT_APPEARED,
         PW_EEPROM_SIZE_TEXT_APPEARED
     );
+    // pw_img_t img;
+    // pw_screen_read_eeprom_pokemon_name_and_message(poke_addr, message_addr, &img);
+
     for(int i = 1; i >= 0; i--) {
         for(int j = 2*80 - 1; j >= 0; j--) {
             img.data[i*2*SCREEN_WIDTH+j] = img.data[i*2*80 + j];
@@ -165,7 +254,7 @@ void pw_screen_draw_pokemon_name_and_message(uint16_t poke_addr, uint16_t messag
         }
     }
     memset(img.data+PW_EEPROM_SIZE_TEXT_POKEMON_NAME, 0, PW_EEPROM_SIZE_TEXT_ATTACKED - PW_EEPROM_SIZE_TEXT_POKEMON_NAME);
-    pw_screen_overlay_text_box(&img, SCREEN_WIDTH, 32, SCREEN_BLACK);
+    pw_screen_overlay_text_box(&img, SCREEN_WIDTH, 32, SCREEN_BLACK); // c variable?
     pw_screen_draw_img(&img, 0, SCREEN_HEIGHT-32);
 }
 
