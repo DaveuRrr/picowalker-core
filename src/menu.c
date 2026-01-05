@@ -160,13 +160,15 @@ static void menu_draw_bottom_numbers(pw_state_t *s, const screen_flags_t *sf) {
             24, SCREEN_HEIGHT-16,
             16, 16,
             PW_EEPROM_ADDR_IMG_WATTS,
-            PW_EEPROM_SIZE_IMG_WATTS
+            PW_EEPROM_SIZE_IMG_WATTS,
+            false
         );
         pw_screen_draw_from_eeprom(
             40, SCREEN_HEIGHT-16,
             8, 16,
             PW_EEPROM_ADDR_IMG_CHAR_SLASH,
-            PW_EEPROM_SIZE_IMG_CHAR
+            PW_EEPROM_SIZE_IMG_CHAR,
+            false
         );
     } else {
         pw_screen_clear_area(0, SCREEN_HEIGHT-16, SCREEN_WIDTH/2, 16);
@@ -176,7 +178,8 @@ static void menu_draw_bottom_numbers(pw_state_t *s, const screen_flags_t *sf) {
         SCREEN_WIDTH-16, SCREEN_HEIGHT-16,
         16, 16,
         PW_EEPROM_ADDR_IMG_WATTS,
-        PW_EEPROM_SIZE_IMG_WATTS
+        PW_EEPROM_SIZE_IMG_WATTS,
+        false
     );
     size_t x = pw_screen_draw_integer(health_data_cache.current_watts, SCREEN_WIDTH-16, SCREEN_HEIGHT-16);
     pw_screen_clear_area(SCREEN_WIDTH/2, SCREEN_HEIGHT-16, x - SCREEN_WIDTH/2, 16);
@@ -193,7 +196,8 @@ static void menu_clear_draw_cursor(pw_state_t *s, const screen_flags_t *sf) {
                 4+i*16, CURSOR_Y_VALUES[i]-8,
                 8, 8,
                 addr,
-                PW_EEPROM_SIZE_IMG_ARROW
+                PW_EEPROM_SIZE_IMG_ARROW,
+                false
             );
         } else {
             pw_screen_clear_area(4+i*16, CURSOR_Y_VALUES[i]-8, 8, 8);
@@ -208,27 +212,32 @@ void pw_menu_init_display(pw_state_t *s, const screen_flags_t *sf) {
         8, 0,
         80, 16,
         MENU_TITLES[s->menu.cursor],
-        PW_EEPROM_SIZE_IMG_MENU_TITLE_CONNECT
+        PW_EEPROM_SIZE_IMG_MENU_TITLE_CONNECT,
+        false
     );
     pw_screen_draw_from_eeprom(
         0, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_LEFT,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_LEFT
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_LEFT,
+        false
     );
     pw_screen_draw_from_eeprom(
         SCREEN_WIDTH-8, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_RIGHT,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_RIGHT
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_RIGHT,
+        false
     );
 
+    // Menu Icons
     for(size_t i = 0; i < MENU_SIZE; i++) {
         pw_screen_draw_from_eeprom(
             i*16, CURSOR_Y_VALUES[i],
             16, 16,
             MENU_ICONS[i],
-            PW_EEPROM_SIZE_IMG_MENU_ICON_CONNECT
+            PW_EEPROM_SIZE_IMG_MENU_ICON_CONNECT,
+            true
         );
     }
 
@@ -253,7 +262,8 @@ void pw_menu_update_display(pw_state_t *s, const screen_flags_t *sf) {
                 8, 0,
                 80, 16,
                 MENU_TITLES[s->menu.cursor],
-                PW_EEPROM_SIZE_IMG_MENU_TITLE_CONNECT
+                PW_EEPROM_SIZE_IMG_MENU_TITLE_CONNECT,
+            false
             );
 
             break;
@@ -270,16 +280,15 @@ void pw_menu_update_display(pw_state_t *s, const screen_flags_t *sf) {
             //pw_screen_draw_text_box(0, SCREEN_HEIGHT-16, SCREEN_WIDTH, 16, SCREEN_BLACK);
 
             uint16_t addr = PW_EEPROM_ADDR_TEXT_NEED_WATTS + PW_EEPROM_SIZE_TEXT_NEED_WATTS*(s->menu.message-1);
-            pw_img_t img = (pw_img_t){
+            pw_img_t img = {
                 .width=SCREEN_WIDTH, 
                 .height=16, 
                 .data=eeprom_buf, 
                 .size=PW_EEPROM_SIZE_TEXT_NEED_WATTS,
-                .flags = {
-                    .draw_mode=DRAW_ORIGINAL,
-                    .contents_format=CONTENTS_ORIGINAL,
-                    .use_alt=false
-                }
+                .lookup_table = {
+                            .addr=addr,
+                            .use_alt=false
+                        }
             };
             pw_eeprom_read(addr, eeprom_buf, PW_EEPROM_SIZE_TEXT_NEED_WATTS);
             pw_screen_overlay_text_box(&img, SCREEN_WIDTH, 16, SCREEN_BLACK);

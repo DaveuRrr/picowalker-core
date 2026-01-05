@@ -71,14 +71,16 @@ void pw_switch_init_display(pw_state_t *s, const screen_flags_t *sf) {
         0, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_RETURN,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN,
+        false
     );
 
     pw_screen_draw_from_eeprom(
         8, 0,
         80, 16,
         PW_EEPROM_ADDR_TEXT_SWITCH,
-        PW_EEPROM_SIZE_TEXT_SWITCH
+        PW_EEPROM_SIZE_TEXT_SWITCH,
+        false
     );
 
     for(uint8_t i = 0; i < 3; i++) {
@@ -86,7 +88,8 @@ void pw_switch_init_display(pw_state_t *s, const screen_flags_t *sf) {
             20+i*(16+8), SCREEN_HEIGHT-32-8,
             8, 8,
             addr,
-            size
+            size,
+            false
         );
     }
 
@@ -94,7 +97,8 @@ void pw_switch_init_display(pw_state_t *s, const screen_flags_t *sf) {
         20+s->switches.cursor*(16+8), SCREEN_HEIGHT-32,
         8, 8,
         PW_EEPROM_ADDR_IMG_ARROW_UP_NORMAL,
-        PW_EEPROM_SIZE_IMG_ARROW
+        PW_EEPROM_SIZE_IMG_ARROW,
+        false
     );
 }
 
@@ -128,14 +132,16 @@ void pw_switch_update_display(pw_state_t *s, const screen_flags_t *sf) {
             20+s->switches.cursor*(8+16), SCREEN_HEIGHT-32,
             8, 8,
             PW_EEPROM_ADDR_IMG_ARROW_UP_NORMAL,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
     } else {
         pw_screen_draw_from_eeprom(
             20+s->switches.cursor*(8+16), SCREEN_HEIGHT-32,
             8, 8,
             PW_EEPROM_ADDR_IMG_ARROW_UP_OFFSET,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
     }
 
@@ -144,7 +150,8 @@ void pw_switch_update_display(pw_state_t *s, const screen_flags_t *sf) {
             0, SCREEN_HEIGHT-16,
             width, 16,
             addr,
-            size
+            size,
+            false
         );
         pw_screen_draw_text_box(0, SCREEN_HEIGHT-16, SCREEN_WIDTH, 16, SCREEN_BLACK);
         s->switches.prev_cursor = s->switches.cursor;

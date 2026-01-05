@@ -159,9 +159,8 @@ void pw_error_init_display(pw_state_t *s, const screen_flags_t *sf) {
         .height=48,
         .data=sad_pokewalker,
         .size=576,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };

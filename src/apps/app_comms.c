@@ -266,19 +266,22 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 (SCREEN_WIDTH-32)/2, SCREEN_HEIGHT-32-16,
                 32, 32,
                 PW_EEPROM_ADDR_IMG_POKEWALKER_BIG,
-                PW_EEPROM_SIZE_IMG_POKEWALKER_BIG
+                PW_EEPROM_SIZE_IMG_POKEWALKER_BIG,
+                true
             );
             pw_screen_draw_from_eeprom(
                 (SCREEN_WIDTH-8)/2, 0,
                 8, 16,
                 PW_EEPROM_ADDR_IMG_IR_ARCS,
-                PW_EEPROM_SIZE_IMG_IR_ARCS
+                PW_EEPROM_SIZE_IMG_IR_ARCS,
+                true
             );
             pw_screen_draw_from_eeprom(
                 0, SCREEN_HEIGHT-16,
                 96, 16,
                 PW_EEPROM_ADDR_TEXT_CONNECTING,
-                PW_EEPROM_SIZE_TEXT_CONNECTING
+                PW_EEPROM_SIZE_TEXT_CONNECTING,
+                false
             );
             pw_screen_draw_text_box(0, SCREEN_HEIGHT-16, SCREEN_WIDTH, 16, SCREEN_BLACK);
             break;
@@ -329,7 +332,8 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 (SCREEN_WIDTH-64)/2, 8,
                 64, 48,
                 PW_EEPROM_ADDR_IMG_POKEMON_LARGE_ANIMATED + ((sf->frame & ANIM_FRAME_DOUBLE_TIME)*PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME),
-                PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME
+                PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME,
+                true
             );
             pw_screen_fill_area(0, 0, SCREEN_WIDTH, 8, SCREEN_BLACK);
             pw_screen_fill_area(0, SCREEN_HEIGHT-8, SCREEN_WIDTH, 8, SCREEN_BLACK);
@@ -349,9 +353,8 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 .height=32, 
                 .data=eeprom_buf,
                 .size=256, 
-                .flags = {
-                    .draw_mode=DRAW_ORIGINAL,
-                    .contents_format=CONTENTS_ORIGINAL,
+                .lookup_table = {
+                    .addr=-1, // FLASH_IMG_POKEWALKER
                     .use_alt=false
                 }
             };
@@ -371,9 +374,8 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 .height=8,
                 .data=eeprom_buf,
                 .size=32,
-                .flags = {
-                    .draw_mode=DRAW_ORIGINAL,
-                    .contents_format=CONTENTS_ORIGINAL,
+                .lookup_table = {
+                    .addr=-1, // FLASH_IMG_FACE_HAPPY,
                     .use_alt=false
                 }
             };
@@ -416,7 +418,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                     (SCREEN_WIDTH-8)/2, 0,
                     8, 16,
                     PW_EEPROM_ADDR_IMG_IR_ARCS,
-                    PW_EEPROM_SIZE_IMG_IR_ARCS
+                    PW_EEPROM_SIZE_IMG_IR_ARCS,
+                    true
                 );
             } else {
                 pw_screen_clear_area((SCREEN_WIDTH-8)/2, 0, 8, 16);
@@ -455,7 +458,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-32)/2, SCREEN_HEIGHT-32-16,
                         32, 24,
                         PW_EEPROM_ADDR_IMG_RADAR_APPEAR_CLOUD,
-                        PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD
+                        PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD,
+                        true
                     );
                     break;
                 }
@@ -464,7 +468,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-64)/2, 8,
                         64, 48,
                         PW_EEPROM_ADDR_IMG_POKEMON_LARGE_ANIMATED,
-                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED
+                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED,
+                        true
                     );
                     //pw_screen_fill_area(0, 0, SCREEN_WIDTH, 8, SCREEN_BLACK);
                     //pw_screen_fill_area(0, SCREEN_HEIGHT-8, SCREEN_WIDTH, 8, SCREEN_BLACK);
@@ -475,7 +480,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-64)/2, 8,
                         64, 48,
                         PW_EEPROM_ADDR_IMG_POKEMON_LARGE_ANIMATED+PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME,
-                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED
+                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED,
+                        true
                     );
                     //pw_screen_fill_area(0, 0, SCREEN_WIDTH, 8, SCREEN_BLACK);
                     //pw_screen_fill_area(0, SCREEN_HEIGHT-8, SCREEN_WIDTH, 8, SCREEN_BLACK);
@@ -487,7 +493,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         0, SCREEN_HEIGHT-32,
                         80, 16,
                         PW_EEPROM_ADDR_TEXT_POKEMON_NAME,
-                        PW_EEPROM_SIZE_TEXT_POKEMON_NAME
+                        PW_EEPROM_SIZE_TEXT_POKEMON_NAME,
+                        false
                     );
                     pw_screen_draw_message(SCREEN_HEIGHT-16, 13, 16);
                     pw_screen_draw_text_box(0, SCREEN_HEIGHT-32, SCREEN_WIDTH, 32, SCREEN_BLACK);
@@ -505,7 +512,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-32)/2, 8,
                         32, 24,
                         PW_EEPROM_ADDR_IMG_POKEMON_SMALL_ANIMATED+((sf->frame & ANIM_FRAME_DOUBLE_TIME)*PW_EEPROM_SIZE_IMG_POKEMON_SMALL_ANIMATED_FRAME),
-                        PW_EEPROM_SIZE_IMG_POKEMON_SMALL_ANIMATED
+                        PW_EEPROM_SIZE_IMG_POKEMON_SMALL_ANIMATED,
+                        true
                     );
                     break;
                 }
@@ -535,7 +543,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-64)/2, 8,
                         64, 48,
                         PW_EEPROM_ADDR_IMG_POKEMON_LARGE_ANIMATED + ((sf->frame & ANIM_FRAME_DOUBLE_TIME)*PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME),
-                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME
+                        PW_EEPROM_SIZE_IMG_POKEMON_LARGE_ANIMATED_FRAME,
+                        true
                     );
                     break;
                 }
@@ -549,7 +558,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         (SCREEN_WIDTH-32)/2, SCREEN_HEIGHT-32-16,
                         32, 24,
                         PW_EEPROM_ADDR_IMG_RADAR_APPEAR_CLOUD,
-                        PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD
+                        PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD,
+                        true
                     );
                     break;
                 }
@@ -567,7 +577,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                         0, SCREEN_HEIGHT-32,
                         80, 16,
                         PW_EEPROM_ADDR_TEXT_POKEMON_NAME,
-                        PW_EEPROM_SIZE_TEXT_POKEMON_NAME
+                        PW_EEPROM_SIZE_TEXT_POKEMON_NAME,
+                        false
                     );
                     pw_screen_draw_message(SCREEN_HEIGHT-16, 14, 16); // "has left"
                     pw_screen_draw_text_box(0, SCREEN_HEIGHT-32, SCREEN_WIDTH, 32, SCREEN_BLACK);
@@ -593,9 +604,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                 .height=8,
                 .data=eeprom_buf,
                 .size=16,
-                .flags = {
-                    .draw_mode=DRAW_ORIGINAL,
-                    .contents_format=CONTENTS_ORIGINAL,
+                .lookup_table = {
+                    .addr=FLASH_IMG_UP_ARROW,
                     .use_alt=false
                 }
             };
@@ -619,9 +629,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                 .height=8,
                 .data=eeprom_buf,
                 .size=32,
-                .flags = {
-                    .draw_mode=DRAW_ORIGINAL,
-                    .contents_format=CONTENTS_ORIGINAL,
+                .lookup_table = {
+                    .addr=FLASH_IMG_FACE_SAD,
                     .use_alt=false
                 }
             };
@@ -642,9 +651,8 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
                     .height=8,
                     .data=eeprom_buf,
                     .size=16,
-                    .flags = {
-                        .draw_mode=DRAW_ORIGINAL,
-                        .contents_format=CONTENTS_ORIGINAL,
+                    .lookup_table = {
+                        .addr=FLASH_IMG_IR_ACTIVE,
                         .use_alt=false
                     }
                 };

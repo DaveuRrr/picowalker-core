@@ -195,7 +195,8 @@ static void draw_cursor(pw_state_t *s, const screen_flags_t *sf) {
         cx, cy,
         8, 8,
         addr,
-        PW_EEPROM_SIZE_IMG_ARROW
+        PW_EEPROM_SIZE_IMG_ARROW,
+        false
     );
 }
 
@@ -228,9 +229,8 @@ static void draw_animated_sprite(pw_state_t *s, const screen_flags_t *sf) {
         .height=24,
         .data=buf,
         .size=size,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };
@@ -260,9 +260,8 @@ static void draw_name(pw_state_t *s, const screen_flags_t *sf) {
             .height=16,
             .data=buf,
             .size=PW_EEPROM_SIZE_TEXT_POKEMON_NAME,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
+            .lookup_table = {
+                .addr=-1,
                 .use_alt=false
             }
         };
@@ -275,9 +274,8 @@ static void draw_name(pw_state_t *s, const screen_flags_t *sf) {
             .height=16,
             .data=buf,
             .size=PW_EEPROM_SIZE_TEXT_ITEM_NAME_SINGLE,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
+            .lookup_table = {
+                .addr=-1,
                 .use_alt=false
             }
         };
@@ -295,21 +293,24 @@ static void pw_inventory_draw_screen1(pw_state_t *s, const screen_flags_t *sf) {
         0, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_RETURN,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN,
+        false
     );
 
     pw_screen_draw_from_eeprom(
         SCREEN_WIDTH-8, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_RIGHT,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_RIGHT
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_RIGHT,
+        false
     );
 
     pw_screen_draw_from_eeprom(
         8, 0,
         80, 16,
         PW_EEPROM_ADDR_IMG_MENU_TITLE_INVENTORY,
-        PW_EEPROM_SIZE_IMG_MENU_TITLE_INVENTORY
+        PW_EEPROM_SIZE_IMG_MENU_TITLE_INVENTORY,
+        false
     );
 
     // Draw icons
@@ -321,10 +322,9 @@ static void pw_inventory_draw_screen1(pw_state_t *s, const screen_flags_t *sf) {
         .height=8,
         .data=buf_pokeball,
         .size=PW_EEPROM_SIZE_IMG_BALL,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
-            .use_alt=false
+        .lookup_table = {
+            .addr=PW_EEPROM_ADDR_IMG_BALL,
+            .use_alt=true
         }
     };
     pw_eeprom_read(PW_EEPROM_ADDR_IMG_BALL, buf_pokeball, PW_EEPROM_SIZE_IMG_BALL);
@@ -334,10 +334,9 @@ static void pw_inventory_draw_screen1(pw_state_t *s, const screen_flags_t *sf) {
         .height=8,
         .data=buf_item,
         .size=PW_EEPROM_SIZE_IMG_ITEM,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
-            .use_alt=false
+        .lookup_table = {
+            .addr=PW_EEPROM_ADDR_IMG_ITEM,
+            .use_alt=true
         }
     };
     pw_eeprom_read(PW_EEPROM_ADDR_IMG_ITEM, buf_item, PW_EEPROM_SIZE_IMG_ITEM);
@@ -366,7 +365,8 @@ static void pw_inventory_draw_screen1(pw_state_t *s, const screen_flags_t *sf) {
             xs[4], yp,
             8, 8,
             PW_EEPROM_ADDR_IMG_BALL_LIGHT,
-            PW_EEPROM_SIZE_IMG_BALL_LIGHT
+            PW_EEPROM_SIZE_IMG_BALL_LIGHT,
+            true
         );
     }
 
@@ -376,7 +376,8 @@ static void pw_inventory_draw_screen1(pw_state_t *s, const screen_flags_t *sf) {
             xs[4], yi,
             8, 8,
             PW_EEPROM_ADDR_IMG_ITEM_LIGHT,
-            PW_EEPROM_SIZE_IMG_ITEM_LIGHT
+            PW_EEPROM_SIZE_IMG_ITEM_LIGHT,
+            true
         );
     }
 
@@ -396,14 +397,16 @@ static void pw_inventory_draw_screen2(pw_state_t *s, const screen_flags_t *sf) {
         0, 0,
         8, 16,
         PW_EEPROM_ADDR_IMG_MENU_ARROW_LEFT,
-        PW_EEPROM_SIZE_IMG_MENU_ARROW_LEFT
+        PW_EEPROM_SIZE_IMG_MENU_ARROW_LEFT,
+        false
     );
 
     pw_screen_draw_from_eeprom(
         8, 0,
         80, 16,
         PW_EEPROM_ADDR_IMG_MENU_TITLE_INVENTORY,
-        PW_EEPROM_SIZE_IMG_MENU_TITLE_INVENTORY
+        PW_EEPROM_SIZE_IMG_MENU_TITLE_INVENTORY,
+        false
     );
 
 
@@ -413,10 +416,9 @@ static void pw_inventory_draw_screen2(pw_state_t *s, const screen_flags_t *sf) {
         .height=8,
         .data=buf_item,
         .size=PW_EEPROM_SIZE_IMG_ITEM,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
-            .use_alt=false
+        .lookup_table = {
+            .addr=PW_EEPROM_ADDR_IMG_ITEM,
+            .use_alt=true
         }
     };
     pw_eeprom_read(PW_EEPROM_ADDR_IMG_ITEM, buf_item, PW_EEPROM_SIZE_IMG_ITEM);
@@ -439,7 +441,8 @@ static void pw_inventory_draw_screen2(pw_state_t *s, const screen_flags_t *sf) {
             SCREEN_WIDTH-32-4, SCREEN_HEIGHT-16-24,
             32, 24,
             PW_EEPROM_ADDR_IMG_PRESENT_LARGE,
-            PW_EEPROM_SIZE_IMG_PRESENT_LARGE
+            PW_EEPROM_SIZE_IMG_PRESENT_LARGE,
+            true
         );
 
         draw_name(s, sf);

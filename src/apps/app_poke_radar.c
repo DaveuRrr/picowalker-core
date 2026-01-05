@@ -37,7 +37,8 @@ static void draw_cursor_update(pw_state_t *s, const screen_flags_t *sf) {
         bush_xs[s->radar.user_cursor]-8, bush_ys[s->radar.user_cursor]+8,
         8, 8,
         (sf->frame&ANIM_FRAME_NORMAL_TIME)? PW_EEPROM_ADDR_IMG_ARROW_RIGHT_NORMAL:PW_EEPROM_ADDR_IMG_ARROW_RIGHT_OFFSET,
-        PW_EEPROM_SIZE_IMG_ARROW
+        PW_EEPROM_SIZE_IMG_ARROW,
+        false
     );
 
     for(uint8_t i = 0; i < 4; i++) {
@@ -85,10 +86,9 @@ void pw_poke_radar_init_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=24,
             .data=eeprom_buf,
             .size=192,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_RADAR_BUSH,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_BUSH, eeprom_buf, PW_EEPROM_SIZE_IMG_RADAR_BUSH);
@@ -104,7 +104,8 @@ void pw_poke_radar_init_display(pw_state_t *s, const screen_flags_t *sf) {
             bush_xs[s->radar.active_bush]+16, bush_ys[s->radar.active_bush],
             16, 16,
             PW_EEPROM_ADDR_IMG_RADAR_CLICK,
-            PW_EEPROM_SIZE_IMG_RADAR_CLICK
+            PW_EEPROM_SIZE_IMG_RADAR_CLICK,
+            true
         );
         break;
     }
@@ -146,7 +147,8 @@ void pw_poke_radar_update_display(pw_state_t *s, const screen_flags_t *sf) {
             bush_xs[s->radar.active_bush]+16, bush_ys[s->radar.active_bush],
             16, 16,
             PW_EEPROM_ADDR_IMG_RADAR_BUBBLE_ONE + radar_level_to_index[s->radar.current_level]*PW_EEPROM_SIZE_IMG_RADAR_BUBBLE_ONE,
-            PW_EEPROM_SIZE_IMG_RADAR_BUBBLE_ONE
+            PW_EEPROM_SIZE_IMG_RADAR_BUBBLE_ONE,
+            true
         );
 
         if(s->radar.active_timer > 0) {

@@ -590,9 +590,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
         .height=24,
         .data=decompression_buf,
         .size=192,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };
@@ -601,9 +600,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
         .height=24,
         .data=decompression_buf+192,
         .size=192,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };
@@ -632,10 +630,9 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=8,
             .data=eeprom_buf,
             .size=16,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP, eeprom_buf, PW_EEPROM_SIZE_IMG_RADAR_HP_BLIP);
@@ -658,7 +655,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             0, SCREEN_HEIGHT-32,
             96, 32,
             PW_EEPROM_ADDR_TEXT_RADAR_ACTION,
-            PW_EEPROM_SIZE_TEXT_RADAR_ACTION
+            PW_EEPROM_SIZE_TEXT_RADAR_ACTION,
+            false
         );
         break;
     }
@@ -743,7 +741,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             THEIR_NORMAL_X, THEIR_NORMAL_Y,
             32, 24,
             PW_EEPROM_ADDR_IMG_RADAR_APPEAR_CLOUD,
-            PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD
+            PW_EEPROM_SIZE_IMG_RADAR_APPEAR_CLOUD,
+            true
         );
         break;
     }
@@ -757,7 +756,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             WOBBLE_INITIAL_Y, WOBBLE_INITIAL_Y,
             8, 8,
             PW_EEPROM_ADDR_IMG_BALL,
-            PW_EEPROM_SIZE_IMG_BALL
+            PW_EEPROM_SIZE_IMG_BALL,
+            true
         );
         break;
     }
@@ -792,10 +792,9 @@ static void draw_our_hp_bar(pw_img_t *battle_buffer, uint8_t hp) {
         .height=8,
         .data=decompression_buf,
         .size=PW_EEPROM_SIZE_IMG_RADAR_HP_BLIP,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
-            .use_alt=false
+        .lookup_table = {
+            .addr=PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP,
+            .use_alt=true
         }
     };
     pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP, hp_sprite.data, PW_EEPROM_SIZE_IMG_RADAR_HP_BLIP);
@@ -812,10 +811,9 @@ static void draw_their_hp_bar(pw_img_t *battle_buffer, uint8_t hp) {
         .height=8,
         .data=decompression_buf,
         .size=PW_EEPROM_SIZE_IMG_RADAR_HP_BLIP,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
-            .use_alt=false
+        .lookup_table = {
+            .addr=PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP,
+            .use_alt=true
         }
     };
     pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_HP_BLIP, hp_sprite.data, PW_EEPROM_SIZE_IMG_RADAR_HP_BLIP);
@@ -860,9 +858,8 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
         .height=24,
         .data=eeprom_buf,
         .size=192,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };
@@ -872,9 +869,8 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
         .height=24,
         .data=eeprom_buf+192,
         .size=192,
-        .flags = {
-            .draw_mode=DRAW_ORIGINAL,
-            .contents_format=CONTENTS_ORIGINAL,
+        .lookup_table = {
+            .addr=-1,
             .use_alt=false
         }
     };
@@ -926,10 +922,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
                     .height = 32,
                     .data=decompression_buf,
                     .size=PW_EEPROM_SIZE_IMG_RADAR_CRITICAL_HIT,
-                    .flags = {
-                        .draw_mode=DRAW_ORIGINAL,
-                        .contents_format=CONTENTS_ORIGINAL,
-                        .use_alt=false
+                    .lookup_table = {
+                        .addr=PW_EEPROM_ADDR_IMG_RADAR_CRITICAL_HIT,
+                        .use_alt=true
                     }
                 };
                 pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_CRITICAL_HIT, crit_hit.data, PW_EEPROM_SIZE_IMG_RADAR_CRITICAL_HIT);
@@ -941,10 +936,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
                     .height = 32,
                     .data=decompression_buf,
                     .size=PW_EEPROM_SIZE_IMG_RADAR_ATTACK_HIT,
-                    .flags = {
-                        .draw_mode=DRAW_ORIGINAL,
-                        .contents_format=CONTENTS_ORIGINAL,
-                        .use_alt=false
+                    .lookup_table = {
+                        .addr=PW_EEPROM_ADDR_IMG_RADAR_ATTACK_HIT,
+                        .use_alt=true
                     }
                 };
                 pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_ATTACK_HIT, normal_hit.data, PW_EEPROM_SIZE_IMG_RADAR_ATTACK_HIT);
@@ -972,10 +966,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
                     .height = 32,
                     .data=decompression_buf,
                     .size=PW_EEPROM_SIZE_IMG_RADAR_ATTACK_HIT,
-                    .flags = {
-                        .draw_mode=DRAW_ORIGINAL,
-                        .contents_format=CONTENTS_ORIGINAL,
-                        .use_alt=false
+                    .lookup_table = {
+                        .addr=PW_EEPROM_ADDR_IMG_RADAR_ATTACK_HIT,
+                        .use_alt=true
                     }
                 };
                 pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_ATTACK_HIT, normal_hit.data, PW_EEPROM_SIZE_IMG_RADAR_ATTACK_HIT);
@@ -1011,10 +1004,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=8,
             .data=decompression_buf,
             .size=16, 
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_BALL,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_BALL, ball.data, PW_EEPROM_SIZE_IMG_BALL);
@@ -1058,10 +1050,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=8,
             .data=decompression_buf,
             .size=16,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_BALL,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_BALL, ball.data, PW_EEPROM_SIZE_IMG_BALL);
@@ -1087,10 +1078,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=8,
             .data=decompression_buf,
             .size=16,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_RADAR_CATCH_EFFECT,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_RADAR_CATCH_EFFECT, star.data, PW_EEPROM_SIZE_IMG_RADAR_CATCH_EFFECT);
@@ -1101,10 +1091,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
             .height=8,
             .data=decompression_buf,
             .size=16,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_BALL,
+                .use_alt=true
             }
         };
         pw_eeprom_read(PW_EEPROM_ADDR_IMG_BALL, ball.data, PW_EEPROM_SIZE_IMG_BALL);

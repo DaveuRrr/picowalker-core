@@ -52,25 +52,29 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             8, 0,
             80, 16,
             PW_EEPROM_ADDR_IMG_MENU_TITLE_SETTINGS,
-            PW_EEPROM_SIZE_IMG_MENU_TITLE_SETTINGS
+            PW_EEPROM_SIZE_IMG_MENU_TITLE_SETTINGS,
+            false
         );
         pw_screen_draw_from_eeprom(
             0, 0,
             8, 16,
             PW_EEPROM_ADDR_IMG_MENU_ARROW_RETURN,
-            PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN
+            PW_EEPROM_SIZE_IMG_MENU_ARROW_RETURN,
+            false
         );
         pw_screen_draw_from_eeprom(
             8, 16,
             40, 16,
             PW_EEPROM_ADDR_IMG_SOUND_FRAME,
-            PW_EEPROM_SIZE_IMG_SOUND_FRAME
+            PW_EEPROM_SIZE_IMG_SOUND_FRAME,
+            false
         );
         pw_screen_draw_from_eeprom(
             56, 16,
             40, 16,
             PW_EEPROM_ADDR_IMG_SHADE_FRAME,
-            PW_EEPROM_SIZE_IMG_SHADE_FRAME
+            PW_EEPROM_SIZE_IMG_SHADE_FRAME,
+            false
         );
         break;
     }
@@ -79,25 +83,29 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             s->settings.main_cursor*48, 16+4,
             8, 8,
             PW_EEPROM_ADDR_IMG_ARROW_RIGHT_INVERT,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
         pw_screen_draw_from_eeprom(
             8, 40,
             24, 16,
             PW_EEPROM_ADDR_IMG_SPEAKER_OFF,
-            PW_EEPROM_SIZE_IMG_SPEAKER_OFF
+            PW_EEPROM_SIZE_IMG_SPEAKER_OFF,
+            true
         );
         pw_screen_draw_from_eeprom(
             40, 40,
             24, 16,
             PW_EEPROM_ADDR_IMG_SPEAKER_LOW,
-            PW_EEPROM_SIZE_IMG_SPEAKER_LOW
+            PW_EEPROM_SIZE_IMG_SPEAKER_LOW,
+            true
         );
         pw_screen_draw_from_eeprom(
             72, 40,
             24, 16,
             PW_EEPROM_ADDR_IMG_SPEAKER_HIGH,
-            PW_EEPROM_SIZE_IMG_SPEAKER_HIGH
+            PW_EEPROM_SIZE_IMG_SPEAKER_HIGH,
+            true
         );
 
         eeprom_addr_t addr = sf->frame&ANIM_FRAME_NORMAL_TIME?PW_EEPROM_ADDR_IMG_ARROW_RIGHT_NORMAL:
@@ -106,7 +114,8 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             s->settings.sub_cursor*32, 40+4,
             8, 8,
             addr,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
 
         break;
@@ -116,17 +125,17 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             s->settings.main_cursor*48, 16+4,
             8, 8,
             PW_EEPROM_ADDR_IMG_ARROW_RIGHT_INVERT,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
         pw_img_t shade_bars = {
             .width=8,
             .height=16,
             .data=eeprom_buf,
             .size=PW_EEPROM_ADDR_IMG_CONTRAST_DEMONSTRATOR,
-            .flags = {
-                .draw_mode=DRAW_ORIGINAL,
-                .contents_format=CONTENTS_ORIGINAL,
-                .use_alt=false
+            .lookup_table = {
+                .addr=PW_EEPROM_ADDR_IMG_CONTRAST_DEMONSTRATOR,
+                .use_alt=true
             }
         };
         pw_eeprom_read(
@@ -145,7 +154,8 @@ void pw_settings_init_display(pw_state_t *s, const screen_flags_t *sf) {
             8+s->settings.sub_cursor*8, 32,
             8, 8,
             addr,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
 
         break;
@@ -168,7 +178,8 @@ void pw_settings_update_display(pw_state_t *s, const screen_flags_t *sf) {
             s->settings.main_cursor*48, 16+4,
             8, 8,
             addr,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
         for(size_t i = 0; i < 2; i++) {
             if(i == s->settings.main_cursor) continue;
@@ -187,7 +198,8 @@ void pw_settings_update_display(pw_state_t *s, const screen_flags_t *sf) {
             s->settings.sub_cursor*32, 40+4,
             8, 8,
             addr,
-            PW_EEPROM_SIZE_IMG_ARROW
+            PW_EEPROM_SIZE_IMG_ARROW,
+            false
         );
         for(size_t i = 0; i < N_SOUND_OPTIONS; i++) {
             if(i == s->settings.sub_cursor) continue;
@@ -205,7 +217,8 @@ void pw_settings_update_display(pw_state_t *s, const screen_flags_t *sf) {
                 8+s->settings.sub_cursor*8, 32,
                 8, 8,
                 addr,
-                PW_EEPROM_SIZE_IMG_ARROW
+                PW_EEPROM_SIZE_IMG_ARROW,
+                false
             );
             for(size_t i = 0; i < N_SHADE_OPTIONS; i++) {
                 if(i == s->settings.sub_cursor) continue;
