@@ -206,8 +206,10 @@ static void draw_animated_sprite(pw_state_t *s, const screen_flags_t *sf) {
     uint8_t *buf = eeprom_buf;
     uint8_t idx, w;
     size_t size;
-    pw_img_t sprite;
+    // pw_img_t sprite;
     enum search_type type;
+    eeprom_addr_t addr;
+    bool use_alt;
 
     if(s->inventory.current_cursor == PI_EMPTY_SLOT) return;
     bool is_pokemon = s->inventory.current_substate == SUBSCREEN_FOUND && s->inventory.current_cursor < PI_EMPTY_SLOT;
@@ -216,22 +218,26 @@ static void draw_animated_sprite(pw_state_t *s, const screen_flags_t *sf) {
     if(is_pokemon) {
         pokemon_index_t pokemon_index = pw_pokemon_id_to_pokemon_index(gdetailed.entries[s->inventory.current_cursor]);
         pw_pokemon_index_to_small_sprite(pokemon_index, buf, (sf->frame&ANIM_FRAME_NORMAL_TIME)>>ANIM_FRAME_NORMAL_TIME_OFFSET);
+        addr = -1;
+        use_alt = false;
     } else {
         pw_eeprom_read(
             PW_EEPROM_ADDR_IMG_TREASURE_LARGE,
             buf,
             PW_EEPROM_SIZE_IMG_TREASURE_LARGE
         );
+        addr = PW_EEPROM_ADDR_IMG_TREASURE_LARGE;
+        use_alt = true;
     }
 
-    sprite = (pw_img_t) {
+    pw_img_t sprite = {
         .width=32,
         .height=24,
         .data=buf,
         .size=size,
         .lookup_table = {
-            .addr=-1,
-            .use_alt=false
+            .addr=addr,
+            .use_alt=use_alt
         }
     };
     pw_screen_draw_img(&sprite, SCREEN_WIDTH-32-4, SCREEN_HEIGHT-16-24);
