@@ -70,28 +70,23 @@ void pw_ir_print_error(ir_err_t err, app_comms_t *comms, pw_packet_t *packet, si
  *  then listen for reply
  */
 ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet, size_t *pn_read) {
-
     ir_err_t err = IR_ERR_TIMEOUT;
 
+    // Listen first. If we got something, process it straight away
+    // We either get timeout (no packet), OK (valid packet, likely master assert) or size mismatch (advertisement)
     err = pw_ir_recv_packet(packet, 8, pn_read);
-    if(*pn_read > 0) {
-        return IR_OK;
-    }
+    if(err == IR_OK || err == IR_ERR_SIZE_MISMATCH) return IR_OK;
 
-    (void)pw_ir_send_advertising_packet();
+    // Didn't hear anything, so we send advertisement
+    err = pw_ir_send_advertising_packet();
+    if(err != IR_OK) return err;
 
-    comms->advertising_attempts++;
-    if(comms->advertising_attempts > MAX_ADVERTISING_PACKETS) {
-        return IR_ERR_ADVERTISING_MAX;
-    }
-
+    // See if we get a reply from the advertisement
     err = pw_ir_recv_packet(packet, 8, pn_read);
-    if(*pn_read > 0) {
-        return IR_OK;
-    }
+    if(err == IR_OK || err == IR_ERR_SIZE_MISMATCH) return IR_OK;
 
-
-    return err;
+    // If we didn't get anything, say we timed out
+    return IR_ERR_TIMEOUT;
 }
 
 
@@ -106,23 +101,26 @@ ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t
 
     switch(comms->current_substate) {
     case COMM_SUBSTATE_FINDING_PEER: {
-
         err = pw_action_listen_and_advertise(comms, packet, &n_read);
-
-        switch(err) {
-        case IR_ERR_SIZE_MISMATCH:  // also ok since we might recv 0xfc
-        case IR_OK:
-            // We received at least one byte, so fall through and check what it was.
+        comms->advertising_attempts++;
+        if(err == IR_OK) {
             comms->current_substate = COMM_SUBSTATE_DETERMINE_ROLE;
-            break;
-        case IR_ERR_TIMEOUT:
-            return IR_OK; // ignore timeout
-        case IR_ERR_ADVERTISING_MAX:
-            return IR_ERR_ADVERTISING_MAX;
-        default:
-            return err; // TODO: change this
+        } else {
+            if(comms->advertising_attempts >= MAX_ADVERTISING_ATTEMPTS) {
+                err = IR_OK;
+                if(comms->first_comms) {
+                    comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
+                    comms->timer = 5;
+                } else {
+                    comms->current_substate = COMM_SUBSTATE_NO_PEER_FOUND;
+                }
+                break;
+            }
         }
 
+        // We have a packet to process this cycle
+        // TODO: move below into function since it isn't actually a cycle
+        // we hang around it, just a response to 
         FALLTHROUGH;
     }
     case COMM_SUBSTATE_DETERMINE_ROLE: {
@@ -191,6 +189,7 @@ ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t
     default:
         return IR_ERR_UNKNOWN_SUBSTATE;
     }
+
     return err;
 }
 

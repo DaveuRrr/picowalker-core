@@ -99,19 +99,7 @@ void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf)
     case COMM_SUBSTATE_FINDING_PEER:
     case COMM_SUBSTATE_DETERMINE_ROLE:
     case COMM_SUBSTATE_AWAITING_SLAVE_ACK: {
-        // TODO: do we need all of this error prop? Either no prop
-        // and change state in function, or full prop and change state here
         err = pw_action_try_find_peer(comms, &packet_buf, PACKET_BUF_SIZE);
-        if(err == IR_ERR_ADVERTISING_MAX) {
-            if(comms->first_comms) {
-                comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
-                comms->timer = 5;
-            } else {
-                comms->current_substate = COMM_SUBSTATE_NO_PEER_FOUND;
-            }
-            err = IR_OK;
-        }
-
         break;
     }
     case COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST:
