@@ -24,7 +24,6 @@ const char* const PW_COMM_SUBSTATE_NAMES[N_COMM_SUBSTATE] = {
     [COMM_SUBSTATE_FIRST_TIMEOUT] = "COMM_SUBSTATE_FIRST_TIMEOUT",
     [COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST] = "COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST",
     [COMM_SUBSTATE_FINDING_PEER] = "COMM_SUBSTATE_FINDING_PEER",
-    [COMM_SUBSTATE_DETERMINE_ROLE] = "COMM_SUBSTATE_DETERMINE_ROLE",
     [COMM_SUBSTATE_AWAITING_SLAVE_ACK] = "COMM_SUBSTATE_AWAITING_SLAVE_ACK",
     [COMM_SUBSTATE_START_PEER_PLAY] = "COMM_SUBSTATE_START_PEER_PLAY",
     [COMM_SUBSTATE_PEER_PLAY_ACK] = "COMM_SUBSTATE_PEER_PLAY_ACK",
@@ -46,7 +45,6 @@ const char* const PW_COMM_SUBSTATE_NAMES[N_COMM_SUBSTATE] = {
     [COMM_SUBSTATE_DISPLAY_POKE_GIFT_ANIMATION] = "COMM_SUBSTATE_DISPLAY_POKE_GIFT_ANIMATION",
     [COMM_SUBSTATE_CALCULATE_PEER_PLAY_GIFT] = "COMM_SUBSTATE_CALCULATE_PEER_PLAY_GIFT",
     [COMM_SUBSTATE_SLAVE_PERFORM_REQUEST] = "COMM_SUBSTATE_SLAVE_PERFORM_REQUEST",
-    [COMM_SUBSTATE_MASTER_DETERMINE_ACTION] = "COMM_SUBSTATE_MASTER_DETERMINE_ACTION",
     [COMM_SUBSTATE_SEND_TO_SPLASH] = "COMM_SUBSTATE_SEND_TO_SPLASH",
     [COMM_SUBSTATE_NO_PEER_FOUND] = "COMM_SUBSTATE_NO_PEER_FOUND",
     [COMM_SUBSTATE_CANNOT_CONNECT] = "COMM_SUBSTATE_CANNOT_CONNECT",
@@ -57,6 +55,18 @@ const char* const PW_COMM_SUBSTATE_NAMES[N_COMM_SUBSTATE] = {
     [COMM_SUBSTATE_COULD_NOT_RECEIVE] = "COMM_SUBSTATE_COULD_NOT_RECEIVE",
     [COMM_SUBSTATE_COMPLETED] = "COMM_SUBSTATE_COMPLETED",
 };
+
+
+static void comms_cannot_complete(app_comms_t *comms, comm_substate_t next_substate) {
+    if(comms->first_comms) {
+        comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
+        comms->timer = 5;
+        comms->anim_frame = 0;
+    } else {
+        comms->current_substate = next_substate;
+    }
+}
+
 
 void pw_comms_init(pw_state_t *s, const screen_flags_t *sf) {
     (void)sf;
@@ -96,126 +106,87 @@ void pw_comms_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf)
     size_t n_rw;
 
     switch(comms->current_substate) {
-    case COMM_SUBSTATE_FINDING_PEER:
-    case COMM_SUBSTATE_DETERMINE_ROLE:
-    case COMM_SUBSTATE_AWAITING_SLAVE_ACK: {
-        err = pw_action_try_find_peer(comms, &packet_buf, PACKET_BUF_SIZE);
-        break;
-    }
-    case COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST:
-    case COMM_SUBSTATE_SLAVE_PERFORM_REQUEST: {
-        err = pw_ir_recv_packet(&packet_buf, PACKET_BUF_SIZE, &n_rw);
-
-        // TODO: switch on `err` and show "cannot complete" if its bad
-        if(err == IR_OK || err == IR_ERR_SIZE_MISMATCH) {
+        case COMM_SUBSTATE_FINDING_PEER:
+        case COMM_SUBSTATE_AWAITING_SLAVE_ACK: {
+            err = pw_action_try_find_peer(comms, &packet_buf, PACKET_BUF_SIZE);
+            break;
+        }
+        case COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST:
+        case COMM_SUBSTATE_SLAVE_PERFORM_REQUEST: {
+            err = pw_ir_recv_packet(&packet_buf, PACKET_BUF_SIZE, &n_rw);
+            if(err != IR_OK && err != IR_ERR_SIZE_MISMATCH) break;
             err = pw_action_slave_perform_request(comms, &packet_buf, n_rw);
-            // TODO: Remove when all actions are implemented
-            if(err != IR_OK) {
-            if(comms->first_comms) {
-                comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
-                comms->timer = 5;
+            break;
+        }
+        // Fallthrough for all peer play packet exchanges
+        case COMM_SUBSTATE_START_PEER_PLAY:
+        case COMM_SUBSTATE_PEER_PLAY_ACK:
+        case COMM_SUBSTATE_SEND_MASTER_SPRITES:
+        case COMM_SUBSTATE_SEND_MASTER_NAME_IMAGE:
+        case COMM_SUBSTATE_SEND_MASTER_TEAMDATA:
+        case COMM_SUBSTATE_READ_SLAVE_SPRITES:
+        case COMM_SUBSTATE_READ_SLAVE_NAME_IMAGE:
+        case COMM_SUBSTATE_READ_SLAVE_TEAMDATA:
+        case COMM_SUBSTATE_SEND_PEER_PLAY_DX:
+        case COMM_SUBSTATE_RECV_PEER_PLAY_DX:
+        case COMM_SUBSTATE_WRITE_PEER_PLAY_DATA:
+        case COMM_SUBSTATE_SEND_PEER_PLAY_END:
+        case COMM_SUBSTATE_RECV_PEER_PLAY_END: {
+            err = pw_action_peer_play(comms, &packet_buf, PACKET_BUF_SIZE);
+            break;
+        }
+        case COMM_SUBSTATE_SEND_TO_SPLASH: {
+            p->sid = STATE_SPLASH;
+            return;
+        }
+        case COMM_SUBSTATE_FIRST_IDLE: {
+            // Spin while waiting for user input
+            err = IR_OK;
+            break;
+        }
+        case COMM_SUBSTATE_FIRST_TIMEOUT: {
+            if(comms->timer == 0) {
+                comms->current_substate = COMM_SUBSTATE_FIRST_IDLE;
+                comms->advertising_attempts = 0;
                 comms->anim_frame = 0;
-            } else {
-                comms->current_substate = COMM_SUBSTATE_CANNOT_COMPLETE;
-            }
-            }
-        } else {
-            pw_ir_print_error(err, comms, &packet_buf, n_rw);
-            if(comms->first_comms) {
-                comms->current_substate = COMM_SUBSTATE_FIRST_TIMEOUT;
-                comms->timer = 5;
-                comms->anim_frame = 0;
-            } else {
-                comms->current_substate = COMM_SUBSTATE_CANNOT_COMPLETE;
             }
             err = IR_OK;
+            break;
         }
-
-        break;
-    }
-    case COMM_SUBSTATE_MASTER_DETERMINE_ACTION: {
-        comms->current_substate = COMM_SUBSTATE_START_PEER_PLAY;
-        FALLTHROUGH;
-    }
-    // Fallthrough for all peer play packet exchanges
-    case COMM_SUBSTATE_START_PEER_PLAY:
-    case COMM_SUBSTATE_PEER_PLAY_ACK:
-    case COMM_SUBSTATE_SEND_MASTER_SPRITES:
-    case COMM_SUBSTATE_SEND_MASTER_NAME_IMAGE:
-    case COMM_SUBSTATE_SEND_MASTER_TEAMDATA:
-    case COMM_SUBSTATE_READ_SLAVE_SPRITES:
-    case COMM_SUBSTATE_READ_SLAVE_NAME_IMAGE:
-    case COMM_SUBSTATE_READ_SLAVE_TEAMDATA:
-    case COMM_SUBSTATE_SEND_PEER_PLAY_DX:
-    case COMM_SUBSTATE_RECV_PEER_PLAY_DX:
-    case COMM_SUBSTATE_WRITE_PEER_PLAY_DATA:
-    case COMM_SUBSTATE_SEND_PEER_PLAY_END:
-    case COMM_SUBSTATE_RECV_PEER_PLAY_END: {
-        err = pw_action_peer_play(comms, &packet_buf, PACKET_BUF_SIZE);
-        // If we timed out, the peer doesn't want to talk to us
-        if(err == IR_ERR_TIMEOUT) {
-            pw_ir_print_error(err, comms, &packet_buf, n_rw);
-            comms->current_substate = COMM_SUBSTATE_CANNOT_COMPLETE;
+        case COMM_SUBSTATE_CANNOT_COMPLETE:
+        case COMM_SUBSTATE_TRAINER_UNAVAILABLE:
+        case COMM_SUBSTATE_ALREADY_RECEIVED_EVENT:
+        case COMM_SUBSTATE_CANNOT_CONNECT_AGAIN:
+        case COMM_SUBSTATE_COULD_NOT_RECEIVE:
+        case COMM_SUBSTATE_COMPLETED:
+        case COMM_SUBSTATE_NO_PEER_FOUND: {
+            // Spin while we wait for user input
             err = IR_OK;
+            break;
         }
-        break;
-    }
-    case COMM_SUBSTATE_SEND_TO_SPLASH: {
-        p->sid = STATE_SPLASH;
-        return;
-    }
-    case COMM_SUBSTATE_FIRST_IDLE:
-                                       {
-        // Spin while waiting for user input
-        err = IR_OK;
-        break;
-    }
-    case COMM_SUBSTATE_FIRST_TIMEOUT: {
-        if(comms->timer == 0) {
-            comms->current_substate = COMM_SUBSTATE_FIRST_IDLE;
-            comms->advertising_attempts = 0;
-            comms->anim_frame = 0;
+        case COMM_SUBSTATE_RETURN_TO_FIRST: {
+            p->sid = STATE_FIRST_COMMS;
+            err = IR_OK;
+            break;
         }
-        err = IR_OK;
-        break;
-    }
-    case COMM_SUBSTATE_CANNOT_COMPLETE:
-    case COMM_SUBSTATE_TRAINER_UNAVAILABLE:
-    case COMM_SUBSTATE_ALREADY_RECEIVED_EVENT:
-    case COMM_SUBSTATE_CANNOT_CONNECT_AGAIN:
-    case COMM_SUBSTATE_COULD_NOT_RECEIVE:
-    case COMM_SUBSTATE_COMPLETED:
-    case COMM_SUBSTATE_NO_PEER_FOUND: {
-        // Spin while we wait for user input
-        err = IR_OK;
-        break;
-    }
-    case COMM_SUBSTATE_RETURN_TO_FIRST: {
-        p->sid = STATE_FIRST_COMMS;
-        err = IR_OK;
-        break;
-    }
-    case COMM_SUBSTATE_DISPLAY_WALK_END_ANIMATION:
-    case COMM_SUBSTATE_DISPLAY_WALK_START_ANIMATION: {
-        if(comms->anim_frame >= comms->final_anim_frame) {
-            comms->current_substate = COMM_SUBSTATE_SEND_TO_SPLASH;
+        case COMM_SUBSTATE_DISPLAY_WALK_END_ANIMATION:
+        case COMM_SUBSTATE_DISPLAY_WALK_START_ANIMATION: {
+            if(comms->anim_frame >= comms->final_anim_frame) {
+                comms->current_substate = COMM_SUBSTATE_SEND_TO_SPLASH;
+            }
+            err = IR_OK;
+            break;
         }
-        err = IR_OK;
-        break;
-    }
-    default: {
-        pw_log_error("Unknown comm state %d\n", comms->current_substate);
-        break;
-    }
+        default: {
+            pw_log_error("Unknown comm state %d\n", comms->current_substate);
+            break;
+        }
     } // switch(cs)
 
     // TODO: remove this and display proper messages on screen
     if(err != IR_OK) {
         pw_ir_print_error(err, comms, &packet_buf, n_rw);
-
-        if(!comms->first_comms) {
-            comms->current_substate = COMM_SUBSTATE_SEND_TO_SPLASH;
-        }
+        comms_cannot_complete(comms, COMM_SUBSTATE_SEND_TO_SPLASH);
     }
 
 }
@@ -364,7 +335,6 @@ void pw_comms_draw_update(pw_state_t *s, const screen_flags_t *sf) {
     switch(s->comms.current_substate) {
         // Regular states with blinking cursor
         case COMM_SUBSTATE_FINDING_PEER:
-        case COMM_SUBSTATE_DETERMINE_ROLE:
         case COMM_SUBSTATE_AWAITING_SLAVE_ACK:
         case COMM_SUBSTATE_START_PEER_PLAY:
         case COMM_SUBSTATE_PEER_PLAY_ACK:

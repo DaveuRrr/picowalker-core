@@ -19,7 +19,6 @@ typedef enum {
     COMM_SUBSTATE_FIRST_TIMEOUT,
     COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST,
     COMM_SUBSTATE_FINDING_PEER,
-    COMM_SUBSTATE_DETERMINE_ROLE,
     COMM_SUBSTATE_AWAITING_SLAVE_ACK,
     COMM_SUBSTATE_START_PEER_PLAY,
     COMM_SUBSTATE_PEER_PLAY_ACK,
@@ -56,8 +55,9 @@ typedef enum {
 } comm_substate_t;
 
 void pw_ir_print_error(ir_err_t err, app_comms_t *comms, pw_packet_t *packet, size_t len);
-ir_err_t pw_action_listen_and_advertise(app_comms_t *comms, pw_packet_t *packet, size_t *pn_read);
+ir_err_t pw_action_listen_and_advertise(pw_packet_t *packet, size_t *pn_read);
 ir_err_t pw_action_try_find_peer(app_comms_t *comms, pw_packet_t *packet, size_t packet_max);
+ir_err_t pw_action_determine_role(app_comms_t *comms, pw_packet_t *packet, size_t n_read);
 ir_err_t pw_action_peer_play(app_comms_t *comms, pw_packet_t *packet, size_t max_len);
 ir_err_t pw_action_slave_perform_request(app_comms_t *comms, pw_packet_t *packet, size_t len);
 
