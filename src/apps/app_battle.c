@@ -585,6 +585,8 @@ void pw_battle_event_loop(pw_state_t *s, pw_state_t *p, const screen_flags_t *sf
 }
 
 void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
+    
+    eeprom_addr_t our_addr;
     pw_img_t our_sprite = {
         .width=32,
         .height=24,
@@ -595,6 +597,10 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             .use_alt=false
         }
     };
+    pw_pokemon_index_to_small_sprite(PIDX_WALKING, our_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET, &our_addr);
+    our_sprite.lookup_table.addr = our_addr;
+
+    eeprom_addr_t their_addr;
     pw_img_t their_sprite = {
         .width=32,
         .height=24,
@@ -605,10 +611,8 @@ void pw_battle_init_display(pw_state_t *s, const screen_flags_t *sf) {
             .use_alt=false
         }
     };
-
-    pw_pokemon_index_to_small_sprite(s->battle.chosen_pokemon+1, their_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET);
-
-    pw_pokemon_index_to_small_sprite(PIDX_WALKING, our_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET);
+    pw_pokemon_index_to_small_sprite(s->battle.chosen_pokemon+1, their_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET, &their_addr);
+    their_sprite.lookup_table.addr = their_addr;
 
     switch(s->battle.current_substate) {
     case BATTLE_OPENING: {
@@ -880,10 +884,9 @@ void pw_battle_update_display(pw_state_t *s, const screen_flags_t *sf) {
         printf("[Error] Couldn't get blank image for battles\n");
         return;
     }
-
-    pw_pokemon_index_to_small_sprite(s->battle.chosen_pokemon+1, their_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET);
-
-    pw_pokemon_index_to_small_sprite(PIDX_WALKING, our_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET);
+    eeprom_addr_t addr;
+    pw_pokemon_index_to_small_sprite(s->battle.chosen_pokemon+1, their_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET, &addr);
+    pw_pokemon_index_to_small_sprite(PIDX_WALKING, our_sprite.data, (sf->frame&ANIM_FRAME_DOUBLE_TIME)>>ANIM_FRAME_DOUBLE_TIME_OFFSET, &addr);
 
     switch(s->battle.current_substate) {
     case BATTLE_OPENING: {

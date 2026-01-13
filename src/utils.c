@@ -134,7 +134,7 @@ void pw_read_inventory(pw_brief_inventory_t *brief, pw_detailed_inventory_t *det
 
 }
 
-void pw_pokemon_index_to_small_sprite(pokemon_index_t idx, uint8_t *buf, uint8_t frame) {
+void pw_pokemon_index_to_small_sprite(pokemon_index_t idx, uint8_t *buf, uint8_t frame, eeprom_addr_t *address) {
     eeprom_addr_t addr;
 
     switch(idx) {
@@ -163,7 +163,7 @@ void pw_pokemon_index_to_small_sprite(pokemon_index_t idx, uint8_t *buf, uint8_t
     }
 
     pw_eeprom_read(addr, buf, PW_EEPROM_SIZE_IMG_POKEMON_SMALL_ANIMATED_FRAME);
-
+    *address = addr;
 }
 
 /**
@@ -222,7 +222,7 @@ void pw_item_index_to_name(uint8_t idx, uint8_t *buf) {
  *
  *  @return `pokemon_index_t` containing which route pokemon slot it is
  */
-pokemon_index_t pw_pokemon_id_to_pokemon_index(uint16_t id) {
+pokemon_index_t pw_pokemon_id_to_pokemon_index(uint16_t id, pokemon_summary_t *pokemon) {
     pokemon_summary_t pokes[N_PIDX];
 
     pw_eeprom_read(
@@ -244,7 +244,12 @@ pokemon_index_t pw_pokemon_id_to_pokemon_index(uint16_t id) {
     );
 
     for(size_t i = 0; i < N_PIDX; i++) {
-        if(pokes[i].le_species == id) return (pokemon_index_t)i;
+        if(pokes[i].le_species == id) {
+            *pokemon = pokes[i];
+            return (pokemon_index_t)i;
+        }
+
+
     }
 
     // unreachable, hopefully

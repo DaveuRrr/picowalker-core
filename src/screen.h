@@ -17,6 +17,8 @@
  *  Derived functions
  */
 
+pokemon_metadata_t pack_pokemon_metadata(const pokemon_summary_t *pokemon);
+
 /********************************************************************************
  * @brief               Reads image data from eeprom addresses
  * @param addr          Address

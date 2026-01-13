@@ -35,9 +35,10 @@ void pw_switch_init(pw_state_t *s, const screen_flags_t *sf) {
         break;
     }
     case SWITCH_TYPE_POKEMON: {
+        pokemon_summary_t pokemon;
         for(size_t i = 0; i < 3; i++) {
             s->switches.inv_ids[i] = di.caught_pokemon[i];
-            s->switches.inv_indices[i] = pw_pokemon_id_to_pokemon_index(di.caught_pokemon[i])-1;
+            s->switches.inv_indices[i] = pw_pokemon_id_to_pokemon_index(di.caught_pokemon[i], &pokemon)-1;
         }
         s->switches.switch_index = s->switches.switch_id; // already an index
         break;

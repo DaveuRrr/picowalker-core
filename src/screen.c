@@ -13,6 +13,16 @@
  *  Most of the heavy lifting is done by the driver code
  */
 
+ // Unpack >> then Pack <<
+pokemon_metadata_t pack_pokemon_metadata(const pokemon_summary_t *pokemon) {
+    pokemon_metadata_t metadata;
+    metadata.species = pokemon->le_species;
+    metadata.flags = (pokemon->pokemon_flags_1 & 0x3F)                   // bits 0-5: variant (0x1F if 32 variants)
+                   | (((pokemon->pokemon_flags_1 >> 6) & 0x01) << 6)     // bit 5: gender
+                   | (((pokemon->pokemon_flags_1 >> 6) & 0x01) << 7);    // bit 6: shiny
+    return metadata;
+}
+
 void pw_screen_read_eeprom_img(eeprom_addr_t addr, img_dim_t w, img_dim_t h, uint8_t *buf, size_t len, bool allowed_color, bool use_alt, pw_img_t *img) {
 
     pw_eeprom_read(addr, buf, len);
