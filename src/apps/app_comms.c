@@ -354,18 +354,25 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 .data=eeprom_buf,
                 .size=256, 
                 .lookup_table = {
-                    .addr=-1, // FLASH_IMG_POKEWALKER
-                    .use_alt=false
+                    .addr=PW_EEPROM_ADDR_IMG_POKEWALKER_BIG, // FLASH_IMG_POKEWALKER
+                    .use_alt=true
                 }
             };
             pw_flash_read(FLASH_IMG_POKEWALKER, img.data);
             pw_screen_draw_img(&img, (SCREEN_WIDTH-32)/2, (SCREEN_HEIGHT-32)/2);
 
-            img.width = 16;
-            img.height = 8;
-            img.size = 0x20;
-            pw_flash_read(FLASH_IMG_FACE_NEUTRAL, img.data);
-            pw_screen_draw_img(&img, (SCREEN_WIDTH-16)/2, (SCREEN_HEIGHT-8)/2);
+            pw_img_t face = {
+                .width=16, 
+                .height=8, 
+                .data=eeprom_buf,
+                .size=0x20, 
+                .lookup_table = {
+                    .addr=-1,
+                    .use_alt=false
+                }
+            };
+            pw_flash_read(FLASH_IMG_FACE_NEUTRAL, face.data);
+            pw_screen_draw_img(&face, (SCREEN_WIDTH-16)/2, (SCREEN_HEIGHT-8)/2);
             break;
         }
         case COMM_SUBSTATE_FIRST_SLAVE_PERFORM_REQUEST: {
