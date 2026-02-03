@@ -17,9 +17,10 @@
 pokemon_metadata_t pack_pokemon_metadata(const pokemon_summary_t *pokemon) {
     pokemon_metadata_t metadata;
     metadata.species = pokemon->le_species;
-    metadata.flags = (pokemon->pokemon_flags_1 & 0x1F)                   // bits 0-5: variant (0x1F if 32 variants)
-                   | (((pokemon->pokemon_flags_1 >> 6) & 0x01) << 6)     // bit 5: gender
-                   | (((pokemon->pokemon_flags_2 >> 1) & 0x01) << 7);    // bit 6: shiny
+    metadata.flags = (pokemon->pokemon_flags_1 & 0x1F)                   // bits 0-4: variant (0x1F if 32 variants)
+                   | (((pokemon->pokemon_flags_1 >> 6) & 0x01) << 5)     // bit 2: gender
+                   | (((pokemon->pokemon_flags_2 >> 0) & 0x01) << 6)     // bit 6: has_form
+                   | (((pokemon->pokemon_flags_2 >> 1) & 0x01) << 7);    // bit 7: shiny
     return metadata;
 }
 

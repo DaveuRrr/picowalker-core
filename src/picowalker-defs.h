@@ -32,12 +32,13 @@ typedef uint8_t screen_colour_t;    /// 2-bits, pw style
 typedef uint8_t img_dim_t;
 
 // Unpacking flags
-// uint8_t variant = flags & 0x1F;            // Mask bits 0-4
-// uint8_t gender  = (flags >> 5) & 0x01;     // Bit 5
-// uint8_t shiny   = (flags >> 6) & 0x01;     // Bit 6
+// uint8_t variant  = flags & 0x1F;            // Mask bits 0-4
+// uint8_t gender   = (flags >> 5) & 0x01;     // Bit 5
+// uint8_t has_form = (flags >> 6) & 0x01;     // Bit 6
+// uint8_t shiny    = (flags >> 7) & 0x01;     // Bit 7
 typedef struct {
     uint16_t species;
-    uint8_t flags; // [7] Shiny, [6] gender, [0-5] variant (0-31)
+    uint8_t flags; // [7] shiny, [6] has_form, [5] gender, [0-4] variant (0-31)
 } pokemon_metadata_t;
 
 typedef struct pw_img_s {
