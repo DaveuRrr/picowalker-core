@@ -354,7 +354,7 @@ void pw_comms_init_display(pw_state_t *s, const screen_flags_t *sf) {
                 .data=eeprom_buf,
                 .size=256, 
                 .lookup_table = {
-                    .addr=PW_EEPROM_ADDR_IMG_POKEWALKER_BIG, // FLASH_IMG_POKEWALKER
+                    .addr=0, // PW_EEPROM_ADDR_IMG_POKEWALKER_BIG, // FLASH_IMG_POKEWALKER
                     .use_alt=true
                 }
             };
