@@ -150,8 +150,6 @@ static void splash_display_pokemon(pw_state_t *s, const screen_flags_t *sf) {
             pw_eeprom_read(frame_addr, img.data, PW_EEPROM_SIZE_IMG_POKEMON_SMALL_ANIMATED_FRAME);
 
             pw_screen_clear_area(origin, 0, s->splash.offset, 48);
-            pw_screen_clear_area(
-                origin + s->splash.offset + 32, 0, PW_SCREEN_WIDTH - (origin + s->splash.offset + 32), 48);
             pw_screen_draw_img(&img, origin + s->splash.offset, 24);
             break;
         }
@@ -182,6 +180,7 @@ static void splash_calc_walking_animation(pw_state_t *s) {
                 if (s->splash.offset >= PW_SCREEN_WIDTH - origin) {
                     s->splash.walking = STROLLING;
                     s->splash.offset = (PW_SCREEN_WIDTH - origin);
+                    s->splash.is_flipped = false;
                 } else {
                     s->splash.offset += 4;
                 }
@@ -216,21 +215,23 @@ static void splash_calc_walking_animation(pw_state_t *s) {
                 }
                 s->splash.anim_frame++;
             } else {
-                if (s->splash.offset >= (PW_SCREEN_WIDTH - origin)) {
-                    s->splash.walking = WALKING;
-                    s->splash.offset = (PW_SCREEN_WIDTH - origin);
-                    s->splash.anim_frame = 0;
-                } else {
-                    s->splash.is_flipped = true;
-                    if (s->splash.anim_frame >= 3 && s->splash.anim_frame % 2 == 0) {
-                        if (s->splash.is_flipped)
-                            s->splash.offset += 4;
-                        else
-                            s->splash.offset -= 4;
-                        s->splash.anim_frame = 0;
-                    }
-                    s->splash.anim_frame++;
-                }
+                // walk-right exit animation (added in 2446550, caused slow/non-prompt exit that does not match walker):
+                // if (s->splash.offset >= (PW_SCREEN_WIDTH - origin)) {
+                //     s->splash.walking = WALKING;
+                //     s->splash.offset = (PW_SCREEN_WIDTH - origin);
+                //     s->splash.anim_frame = 0;
+                // } else {
+                //     s->splash.is_flipped = true;
+                //     if (s->splash.anim_frame >= 3 && s->splash.anim_frame % 2 == 0) {
+                //         if (s->splash.is_flipped) s->splash.offset += 4;
+                //         else s->splash.offset -= 4;
+                //         s->splash.anim_frame = 0;
+                //     }
+                //     s->splash.anim_frame++;
+                // }
+                s->splash.walking = WALKING;
+                s->splash.offset = (PW_SCREEN_WIDTH - origin);
+                s->splash.anim_frame = 0;
             }
             break;
         }
